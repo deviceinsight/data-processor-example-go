@@ -8,22 +8,32 @@ import (
 )
 
 type datapoint struct {
-	Key       string      `json:"key"`
-	Value     interface{} `json:"value"`
-	Timestamp string      `json:"timestamp"`
-	DataType  string      `json:"dataType"`
+	Key             string      `json:"datapointKey"`
+	Value           string      `json:"value"`
+	Timestamp       string      `json:"tsIso8601"`
+	DataType        string      `json:"dataType"`
+	Unit            *string     `json:"unit"`
+	ExtraProperties interface{} `json:"extraProperties"`
 }
 
 type event struct {
-	EventKey string `json:"eventKey"`
-	//Priority  *int
-	//Timestamp *string
+	EventKey        string      `json:"eventKey"`
+	Priority        *int        `json:"priority"`
+	Timestamp       *string     `json:"tsIso8601"`
+	Come            *bool       `json:"come"`
+	Ack             *bool       `json:"acknowledged"`
+	Text            *string     `json:"text"`
+	ExtraProperties interface{} `json:"extraProperties"`
 }
 
 type geoPosition struct {
-	Latitude  float32
-	Longitude float32
-	Timestamp string
+	Latitude           float64
+	Longitude          float64
+	Altitude           float64
+	Timestamp          string
+	Heading            float64
+	NumberOfSatellites int
+	Speed              float64
 }
 
 type threshold struct {
@@ -122,24 +132,17 @@ func readStdin() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	b := scanner.Bytes()
-	fmt.Println("first line:", string(b))
+	fmt.Println("Read Config", string(b))
 
 	var err error
 	conf, err = toConfig(b)
-	if err != nil {
-		fmt.Println("error:", err)
-	} else {
-		//fmt.Println("Filter type:", conf.Filter.Type)
-
-	}
-	for scanner.Scan() {
-		b := scanner.Bytes()
-		d, err := toDatapoint(b)
-		if err != nil {
-			fmt.Println("error:", err)
-		} else {
-			fmt.Println("key:", d.Key)
-			processDatapoint(&d)
+	if err == nil {
+		for scanner.Scan() {
+			b := scanner.Bytes()
+			d, err := toDatapoint(b)
+			if err == nil {
+				processDatapoint(&d)
+			}
 		}
 	}
 }
